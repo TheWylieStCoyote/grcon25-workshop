@@ -1,0 +1,118 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+% \usepackage{fontawesome5} % Uncomment if fontawesome5 is installed
+\usepackage{xcolor}
+
+% TikZ libraries
+\usetikzlibrary{shapes,arrows,positioning,calc,decorations.pathreplacing}
+
+% Code listing settings
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    language=Python
+}
+
+\lstset{style=pythonstyle}
+
+% Title Information
+\title{Introduction to GNU Radio}
+\subtitle{Using GRC and Python for Software Defined Radio}
+\author{Workshop Instructor}
+\institute{GRCon 2025}
+\date{\today}
+
+% Logo
+% \titlegraphic{\includegraphics[width=2cm]{images/gnuradio_logo.png}}
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Agenda}
+\tableofcontents
+\end{frame}
+
+% Include sections
+\input{sections/01_intro_sdr}
+\input{sections/02_grc_basics}
+\input{sections/03_python_integration}
+\input{sections/04_signal_processing}
+\input{sections/05_hardware}
+\input{sections/06_oot_modules}
+
+% Conclusion
+\section{Conclusion}
+\begin{frame}{Summary}
+\begin{itemize}
+    \item \textbf{SDR Fundamentals:} Understanding IQ data and sampling
+    \item \textbf{GNU Radio Companion:} Visual programming for signal processing
+    \item \textbf{Python Integration:} Custom blocks and applications
+    \item \textbf{Communications:} Analog and digital modulation techniques
+    \item \textbf{Hardware:} RTL-SDR, USRP, and network interfaces
+    \item \textbf{Extensibility:} Creating out-of-tree modules
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Resources}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Documentation}
+\begin{itemize}
+    \item \href{https://www.gnuradio.org}{GNU Radio Website}
+    \item \href{https://wiki.gnuradio.org}{GNU Radio Wiki}
+    \item \href{https://github.com/gnuradio/gnuradio}{GitHub Repository}
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Community}
+\begin{itemize}
+    \item \href{https://chat.gnuradio.org}{GNU Radio Chat}
+    \item \href{https://lists.gnu.org/mailman/listinfo/discuss-gnuradio}{Mailing List}
+    \item \href{https://www.gnuradio.org/grcon/}{GRCon Conference}
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Questions?}
+\centering
+\Large Thank you for attending!\\[1em]
+\normalsize
+Email: instructor@example.com\\
+GitHub: github.com/workshop-repo\\[2em]
+% \includegraphics[width=3cm]{images/gnuradio_logo.png}
+\end{frame}
+
+\end{document}

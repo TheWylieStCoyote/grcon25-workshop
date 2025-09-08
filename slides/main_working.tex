@@ -1,0 +1,416 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{verbatim}
+
+% TikZ libraries
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% Title Information
+\title{Introduction to GNU Radio}
+\subtitle{Using GRC and Python for Software Defined Radio}
+\author{Workshop Instructor}
+\institute{GRCon 2025}
+\date{\today}
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Agenda}
+\tableofcontents
+\end{frame}
+
+\section{Introduction to SDR}
+\begin{frame}{Software Defined Radio}
+\begin{itemize}
+    \item Radio systems implemented in software
+    \item Flexibility to change modulation and protocols
+    \item Key components: RF frontend, ADC/DAC, DSP
+    \item Applications: Communications, Research, Education
+\end{itemize}
+\end{frame}
+
+\begin{frame}{IQ Data}
+\begin{itemize}
+    \item Complex representation: $s(t) = I(t) + jQ(t)$
+    \item Magnitude: $|s(t)| = \sqrt{I^2 + Q^2}$
+    \item Phase: $\phi(t) = \text{atan2}(Q, I)$
+    \item Benefits: Negative frequencies, Simplified math
+\end{itemize}
+\end{frame}
+
+\section{GNU Radio Companion}
+\begin{frame}{GRC Interface}
+\begin{itemize}
+    \item Block Library: Available processing blocks
+    \item Canvas: Design area for flowgraphs
+    \item Properties: Block configuration
+    \item Console: Messages and errors
+    \item Variables: Global parameters
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Block Categories}
+\begin{columns}
+\column{0.33\textwidth}
+\textbf{Sources}
+\begin{itemize}
+    \item Signal Source
+    \item Noise Source
+    \item File Source
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{Sinks}
+\begin{itemize}
+    \item QT GUI Sink
+    \item Audio Sink
+    \item File Sink
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{Operations}
+\begin{itemize}
+    \item Add/Multiply
+    \item Filters
+    \item FFT
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\section{Python Integration}
+\begin{frame}{GRC to Python}
+\begin{itemize}
+    \item GRC generates Python code automatically
+    \item File: top\_block.py
+    \item Fully functional application
+    \item Can be modified and extended
+    \item Class inherits from gr.top\_block
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Custom Python Blocks}
+\begin{itemize}
+    \item sync\_block: 1:1 input/output ratio
+    \item decimator: N:1 ratio (downsampling)
+    \item interpolator: 1:N ratio (upsampling)
+    \item general\_block: Variable ratios
+    \item basic\_block: Message passing only
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Sync Block Example}
+\begin{verbatim}
+import numpy as np
+from gnuradio import gr
+
+class amplitude_scale(gr.sync_block):
+    """Scales amplitude and adds DC offset"""
+    
+    def __init__(self, scale=2.0, offset=0.0):
+        gr.sync_block.__init__(
+            self,
+            name="Amplitude Scale",
+            in_sig=[np.complex64],
+            out_sig=[np.complex64]
+        )
+        self.scale = scale
+        self.offset = offset
+    
+    def work(self, input_items, output_items):
+        in0 = input_items[0]
+        out = output_items[0]
+        out[:] = in0 * self.scale + self.offset
+        return len(out)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Decimator Block Example}
+\begin{verbatim}
+import numpy as np
+from gnuradio import gr
+
+class averaging_decimator(gr.decim_block):
+    """Decimates by averaging N samples"""
+    
+    def __init__(self, decimation=4):
+        gr.decim_block.__init__(
+            self,
+            name="Averaging Decimator",
+            in_sig=[np.float32],
+            out_sig=[np.float32],
+            decim=decimation
+        )
+        self.decimation = decimation
+    
+    def work(self, input_items, output_items):
+        in0 = input_items[0]
+        out = output_items[0]
+        for i in range(len(out)):
+            start = i * self.decimation
+            end = start + self.decimation
+            out[i] = np.mean(in0[start:end])
+        return len(out)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Interpolator Block Example}
+\begin{verbatim}
+import numpy as np
+from gnuradio import gr
+
+class zero_pad_interpolator(gr.interp_block):
+    """Interpolates by inserting zeros"""
+    
+    def __init__(self, interpolation=4):
+        gr.interp_block.__init__(
+            self,
+            name="Zero Pad Interpolator",
+            in_sig=[np.complex64],
+            out_sig=[np.complex64],
+            interp=interpolation
+        )
+        self.interp = interpolation
+    
+    def work(self, input_items, output_items):
+        in0 = input_items[0]
+        out = output_items[0]
+        out[::self.interp] = in0
+        out.flat[1::self.interp] = 0
+        return len(out)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{General Block Example}
+\begin{verbatim}
+class packet_detector(gr.basic_block):
+    def __init__(self, threshold=0.5):
+        gr.basic_block.__init__(self,
+            name="Packet Detector",
+            in_sig=[np.float32],
+            out_sig=[np.float32])
+        self.threshold = threshold
+    
+    def forecast(self, noutput_items, ninput_items_required):
+        ninput_items_required[0] = noutput_items
+    
+    def general_work(self, input_items, output_items):
+        in0 = input_items[0]
+        out = output_items[0]
+        consumed = produced = 0
+        
+        for i, sample in enumerate(in0):
+            if abs(sample) > self.threshold:
+                out[produced] = sample
+                produced += 1
+            consumed = i + 1
+            if produced >= len(out):
+                break
+        
+        self.consume(0, consumed)
+        return produced
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Message Passing Block}
+\begin{verbatim}
+import pmt
+from gnuradio import gr
+
+class message_statistics(gr.basic_block):
+    def __init__(self):
+        gr.basic_block.__init__(self,
+            name="Message Statistics",
+            in_sig=None, out_sig=None)
+        
+        self.message_port_register_in(pmt.intern("data_in"))
+        self.message_port_register_out(pmt.intern("stats_out"))
+        self.set_msg_handler(pmt.intern("data_in"), 
+                            self.handle_message)
+    
+    def handle_message(self, msg):
+        data = pmt.to_python(msg)
+        stats = {
+            'mean': float(np.mean(data)),
+            'std': float(np.std(data)),
+            'max': float(np.max(data))
+        }
+        self.message_port_pub(pmt.intern("stats_out"),
+                             pmt.to_pmt(stats))
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Hierarchical Block Example}
+\begin{verbatim}
+from gnuradio import gr, blocks, analog, filter
+
+class fm_demod_cf(gr.hier_block2):
+    def __init__(self, audio_rate=48000, quad_rate=480000):
+        gr.hier_block2.__init__(self,
+            "FM Demodulator",
+            gr.io_signature(1, 1, gr.sizeof_gr_complex),
+            gr.io_signature(1, 1, gr.sizeof_float))
+        
+        # Internal blocks
+        self.quad_demod = analog.quadrature_demod_cf(
+            quad_rate/(2*3.14159*75e3))
+        
+        audio_decim = int(quad_rate / audio_rate)
+        audio_taps = filter.firdes.low_pass(
+            1.0, quad_rate, 15e3, 1e3)
+        self.audio_filter = filter.fir_filter_fff(
+            audio_decim, audio_taps)
+        
+        # Connect
+        self.connect(self, self.quad_demod)
+        self.connect(self.quad_demod, self.audio_filter)
+        self.connect(self.audio_filter, self)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Tagged Stream Example}
+\begin{verbatim}
+import pmt
+from gnuradio import gr
+
+class burst_tagger(gr.sync_block):
+    def __init__(self, burst_len=100):
+        gr.sync_block.__init__(self,
+            name="Burst Tagger",
+            in_sig=[np.complex64],
+            out_sig=[np.complex64])
+        self.burst_len = burst_len
+        self.sample_count = 0
+    
+    def work(self, input_items, output_items):
+        in0 = input_items[0]
+        out = output_items[0]
+        out[:] = in0
+        
+        for i in range(len(out)):
+            if self.sample_count % self.burst_len == 0:
+                tag = gr.tag_t()
+                tag.offset = self.nitems_written(0) + i
+                tag.key = pmt.string_to_symbol("burst_start")
+                tag.value = pmt.from_long(
+                    self.sample_count // self.burst_len)
+                self.add_item_tag(0, tag)
+            self.sample_count += 1
+        
+        return len(out)
+\end{verbatim}
+\end{frame}
+
+\section{Signal Processing}
+\begin{frame}{Digital Filters}
+\begin{itemize}
+    \item Low Pass Filter (LPF)
+    \item High Pass Filter (HPF)
+    \item Band Pass Filter (BPF)
+    \item FIR and IIR implementations
+    \item Key parameters: Cutoff frequency, Transition width
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Modulation Techniques}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Analog}
+\begin{itemize}
+    \item AM (Amplitude)
+    \item FM (Frequency)
+    \item SSB (Single Sideband)
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Digital}
+\begin{itemize}
+    \item OOK (On-Off Keying)
+    \item FSK (Frequency Shift)
+    \item QAM (Quadrature AM)
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\section{Hardware Integration}
+\begin{frame}{SDR Hardware Options}
+\begin{itemize}
+    \item \textbf{RTL-SDR:} \$30, Receive only, 2.4 MS/s
+    \item \textbf{HackRF:} \$300, Half-duplex, 20 MS/s
+    \item \textbf{USRP:} \$1000+, Full-duplex, 56+ MS/s
+    \item \textbf{PlutoSDR:} \$200, Full-duplex, 20 MS/s
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Network Interfaces}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{TCP/UDP}
+\begin{itemize}
+    \item Stream IQ over network
+    \item Remote SDR operation
+    \item Simple but higher latency
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{ZeroMQ}
+\begin{itemize}
+    \item High-performance messaging
+    \item Multiple patterns
+    \item Better for real-time
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\section{Out-of-Tree Modules}
+\begin{frame}{Creating OOT Modules}
+\begin{itemize}
+    \item Custom GNU Radio modules
+    \item Developed separately from core
+    \item Use gr\_modtool to create
+    \item Share via GitHub, PyPI, or CGRAN
+    \item Examples: gr-ieee802-11, gr-lora, gr-satellites
+\end{itemize}
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}{Summary}
+\begin{itemize}
+    \item Learned SDR fundamentals
+    \item Built flowgraphs in GRC
+    \item Created Python applications
+    \item Explored hardware options
+    \item Ready for advanced topics!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Resources}
+\begin{itemize}
+    \item GNU Radio Documentation: gnuradio.org/doc
+    \item Tutorials: wiki.gnuradio.org/index.php/Tutorials
+    \item Community: chat.gnuradio.org
+    \item Workshop materials: github.com/workshop-repo
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Questions?}
+\centering
+\Large Thank you for attending!\\[1em]
+\normalsize
+Contact: instructor@example.com
+\end{frame}
+
+\end{document}

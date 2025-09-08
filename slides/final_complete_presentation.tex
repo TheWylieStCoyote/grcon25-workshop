@@ -1,0 +1,1418 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{verbatim}
+
+% TikZ libraries
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% Title Information
+\title{Introduction to GNU Radio}
+\subtitle{Using GRC and Python for Software Defined Radio}
+\author{Wylie Standage-Beier}
+\institute{GRCon 2025}
+\date{\today}
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Agenda}
+\tableofcontents
+\end{frame}
+
+\begin{frame}{Resources}
+\begin{itemize}
+    \item GNU Radio Documentation: www.gnuradio.org/doc/doxygen/
+    \item Tutorials: wiki.gnuradio.org/index.php?title=Tutorials
+    \item Community: chat.gnuradio.org
+    \item Workshop materials: github.com/thewyliestcoyote/grcon25-workshop
+\end{itemize}
+\end{frame}
+
+\section{Introduction to SDR}
+
+\begin{frame}[plain]
+\vfill
+\centering
+\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+\usebeamerfont{title}\Large Introduction to SDR\par
+\end{beamercolorbox}
+\vfill
+\begin{itemize}
+    \item What is Software Defined Radio?
+    \item IQ Data Fundamentals
+    \item Key SDR Concepts
+\end{itemize}
+\vfill
+\end{frame}
+
+\begin{frame}{Software Defined Radio}
+\begin{itemize}
+    \item Radio systems implemented in software
+    \item Flexibility to change modulation and protocols
+    \item Faster implementation
+    \item Key components will always be hardware: RF frontend, ADC/DAC, Filter, Amplitude, Antennas
+    \item Applications: Communications, Research, Education
+\end{itemize}
+\end{frame}
+
+\begin{frame}{IQ Data}
+\begin{itemize}
+    \item Complex representation: $s(t) = I(t) + jQ(t)$
+    \item Magnitude: $|s(t)| = \sqrt{I^2 + Q^2}$
+    \item Phase: $\phi(t) = \text{atan2}(Q, I)$
+    \item Benefits: Negative frequencies, Simplified math
+\end{itemize}
+\end{frame}
+
+\section{GNU Radio Companion}
+
+\begin{frame}[plain]
+\vfill
+\centering
+\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+\usebeamerfont{title}\Large GNU Radio Companion\par
+\end{beamercolorbox}
+\vfill
+\begin{itemize}
+    \item Visual Flow Graph Design
+    \item Block Types and Categories
+    \item Building Your First Flowgraph
+    \item Best Practices and Tips
+\end{itemize}
+\vfill
+\end{frame}
+
+\begin{frame}{GRC Interface}
+\begin{itemize}
+    \item Block Library: Available processing blocks
+    \item Canvas: Design area for flowgraphs
+    \item Properties: Block configuration
+    \item Console: Messages and errors
+    \item Variables: Global parameters
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Working with GRC - Getting Started}
+\begin{itemize}
+    \item \textbf{Creating a New Flowgraph}: File $\rightarrow$ New
+    \item \textbf{Options Block}: Auto-generated, configures runtime
+    \item \textbf{Sample Rate}: Set globally via variable block
+    \item \textbf{Generate Options}: GUI QT, No GUI, or Hier Block
+    \item \textbf{Run to Completion}: Enable for batch processing
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Data Types in GRC}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Stream Types}
+\begin{itemize}
+    \item Complex Float 32 (blue)
+    \item Float 32 (orange)
+    \item Int 32 (green)
+    \item Short (yellow)
+    \item Byte (magenta)
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Port Colors}
+\begin{itemize}
+    \item Blue: Complex data
+    \item Orange: Real data
+    \item Green: Integer data
+    \item Red: Message ports
+    \item Gray: Disabled/Error
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{PDU vs Stream Processing}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Stream Processing:}
+\begin{itemize}
+    \item Continuous sample flow
+    \item Fixed-rate processing
+    \item Back-pressure control
+    \item Real-time operation
+\end{itemize}
+
+\textbf{Stream Characteristics:}
+\begin{itemize}
+    \item Buffered data transfer
+    \item Scheduler managed
+    \item Deterministic timing*
+    \item Fixed rate
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{PDU (Message) Processing:}
+\begin{itemize}
+    \item Discrete packets
+    \item Asynchronous handling
+    \item Variable length data
+    \item Metadata support
+\end{itemize}
+
+\textbf{PDU Use Cases:}
+\begin{itemize}
+    \item MAC layer protocols
+    \item Control messages
+    \item Bursty communications
+    \item Network packets
+    \item Stream to PDU conversion
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Connecting Blocks}
+\begin{itemize}
+    \item \textbf{Click and Drag}: From output to input port
+    \item \textbf{Type Matching}: Ports must have compatible types
+    \item \textbf{Rate Matching}: Consider sample rate changes
+    \item \textbf{Multiple Outputs}: One output can feed multiple inputs
+    \item \textbf{Throttle Block}: Required for non-hardware flows
+\end{itemize}
+
+\textbf{Common Pitfalls:}
+\begin{itemize}
+    \item Missing throttle in simulation
+    \item Type mismatches (use type converters)
+    \item Sample rate inconsistencies
+\end{itemize}
+\end{frame}
+
+\begin{frame}{GRC Tips and Tricks}
+\begin{itemize}
+    \item \textbf{Ctrl+F}: Find blocks quickly
+    \item \textbf{Ctrl+D}: Duplicate selected blocks
+    \item \textbf{Ctrl+R}: Rotate block
+    \item \textbf{Ctrl+E}: Enable/Disable block
+    \item \textbf{Middle Click}: Delete connection
+    \item \textbf{Shift+Click}: Select multiple blocks
+\end{itemize}
+
+\textbf{Workflow Tips:}
+\begin{itemize}
+    \item Save frequently (Ctrl+S)
+    \item Use descriptive variable names
+    \item Document with Note blocks
+    \item Version control .grc files
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Block Taxonomy}
+\footnotesize
+\begin{columns}[T]
+\column{0.33\textwidth}
+\textbf{\color{blue}Sources \& Sinks}
+
+\textit{Data I/O:}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item Signal/Noise Source
+    \item File Source/Sink
+    \item Audio Source/Sink
+    \item Network (UDP/TCP)
+\end{itemize}
+
+\textit{Hardware:}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item USRP Source/Sink
+    \item RTL-SDR Source
+    \item PlutoSDR
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{\color{blue}Signal Processing}
+
+\textit{Rate Change:}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item Decimating FIR
+    \item Interpolating FIR
+    \item Rational Resampler
+\end{itemize}
+
+\textit{Transforms:}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item FFT/IFFT
+\end{itemize}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item Add/Multiply
+    \item Mag/Phase
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{\color{blue}Modulation}
+
+\textit{Modulators:}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item AM/FM/PM
+    \item PSK/QAM
+    \item OFDM/GFSK
+\end{itemize}
+
+\textit{Synchronization:}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item Costas Loop
+    \item Clock Recovery
+    \item AGC
+\end{itemize}
+
+\textit{Stream Control:}
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item Mux/Demux
+    \item Throttle
+    \item Head/Skip
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Sync Blocks}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{What are Sync Blocks?}
+\begin{itemize}
+    \item Fixed 1:1 input/output ratio
+    \item Process samples synchronously
+    \item Most common block type
+    \item Predictable data flow
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Examples:}
+\begin{itemize}
+    \item Add/Multiply blocks
+    \item Complex to Mag/Phase
+    \item Type converters
+    \item Math operations
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \texttt{work()} processes N samples
+    \item Returns number processed
+    \item No rate change
+    \item Simple to implement
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Signal arithmetic
+    \item Format conversion
+    \item Simple filtering
+    \item Measurement blocks
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Source and Sink Blocks}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Source Blocks:}
+\begin{itemize}
+    \item No input ports
+    \item Generate or acquire data
+    \item Drive the flowgraph
+\end{itemize}
+
+\textbf{Source Examples:}
+\begin{itemize}
+    \item Signal Source
+    \item Noise Source
+    \item File Source
+    \item Audio Source
+    \item USRP/RTL-SDR Source
+    \item Random Source
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Sink Blocks:}
+\begin{itemize}
+    \item No output ports
+    \item Consume data
+    \item End points of flowgraph
+\end{itemize}
+
+\textbf{Sink Examples:}
+\begin{itemize}
+    \item File Sink
+    \item Audio Sink
+    \item GUI displays (Time, FFT)
+    \item USRP/RTL-SDR Sink
+    \item Null Sink
+    \item Vector Sink
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Decimation and Interpolation Blocks}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Decimation Blocks:}
+\begin{itemize}
+    \item Reduce sample rate
+    \item N inputs → 1 output
+    \item Anti-aliasing filtering
+    \item Factor must be integer
+\end{itemize}
+
+\textbf{Decimation Examples:}
+\begin{itemize}
+    \item Decimating FIR Filter
+    \item Keep 1 in N
+    \item Low Pass + Decimation
+    \item Polyphase Decimator
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Interpolation Blocks:}
+\begin{itemize}
+    \item Increase sample rate
+    \item 1 input → N outputs
+    \item Anti-imaging filtering
+    \item Factor must be integer
+\end{itemize}
+
+\textbf{Interpolation Examples:}
+\begin{itemize}
+    \item Interpolating FIR Filter
+    \item Repeat
+    \item Low Pass + Interpolation
+    \item Polyphase Interpolator
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{General and Basic Blocks}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{General Blocks:}
+\begin{itemize}
+    \item Variable input/output ratio
+    \item Call \texttt{consume()} manually
+    \item More complex than sync
+    \item Flexible processing
+\end{itemize}
+
+\textbf{General Examples:}
+\begin{itemize}
+    \item Correlate Access Code
+    \item Packet Encoder/Decoder
+    \item Stream CRC32
+    \item Protocol formatters
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Basic Blocks:}
+\begin{itemize}
+    \item Most flexible type
+    \item Handle any I/O pattern
+    \item Manual forecast/consume
+    \item Complex implementations
+\end{itemize}
+
+\textbf{Tagged Stream Blocks:}
+\begin{itemize}
+    \item Length-tagged packets
+    \item Process complete bursts
+    \item Preserve packet boundaries
+    \item Used in packet radio
+\end{itemize}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Tagged Streams}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{What are Tagged Streams?}
+\begin{itemize}
+    \item Metadata attached to samples
+    \item Key-value pairs (PMT format)
+    \item Synchronous with data flow
+    \item Precise sample timing
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Common Tags:}
+\begin{itemize}
+    \item \texttt{packet\_len}: Burst length
+    \item \texttt{rx\_time}: Timestamp
+    \item \texttt{rx\_freq}: Center frequency
+    \item \texttt{rx\_rate}: Sample rate
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Burst transmission
+    \item Time synchronization
+    \item Dynamic parameters
+    \item Packet boundaries
+    \item Channel info
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Key Blocks:}
+\begin{itemize}
+    \item Stream to Tagged Stream
+    \item Tagged Stream Align
+    \item Tagged Stream Mux
+    \item Burst Tagger
+    \item Tag Debug
+\end{itemize}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Variables and Parameters}
+\begin{itemize}
+    \item \textbf{Variable Block}: Define reusable values
+    \item \textbf{QT GUI Range}: Runtime adjustable sliders
+    \item \textbf{QT GUI Entry}: Text input for parameters
+    \item \textbf{QT GUI Chooser}: Dropdown/button selection
+    \item \textbf{Parameter Block}: Command-line arguments
+\end{itemize}
+
+\textbf{Example Variables:}
+\begin{itemize}
+    \item samp\_rate = 2e6
+    \item center\_freq = 100e6
+    \item gain = 10
+\end{itemize}
+\end{frame}
+
+\begin{frame}{GUI Widgets and Visualization}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Display Widgets}
+\begin{itemize}
+    \item Time Sink
+    \item Frequency Sink
+    \item Waterfall Sink
+    \item Constellation Sink
+    \item Histogram
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Control Widgets}
+\begin{itemize}
+    \item Range Slider
+    \item Entry Box
+    \item Chooser
+    \item Push Button
+    \item Check Box
+\end{itemize}
+\end{columns}
+
+\textbf{Tips:}
+\begin{itemize}
+    \item Use tabs to organize complex GUIs
+    \item Set update rates appropriately
+    \item Enable grid and autoscale
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Hierarchical Blocks in GRC}
+\begin{itemize}
+    \item \textbf{Create}: Right-click $\rightarrow$ Create Hier Block
+    \item \textbf{Purpose}: Reusable sub-flowgraphs
+    \item \textbf{Pad Blocks}: Define inputs/outputs
+    \item \textbf{Parameters}: Pass values into hier block
+    \item \textbf{Generate}: Creates .grc and .py files
+\end{itemize}
+
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Custom modulator/demodulator pairs
+    \item Reusable filter chains
+    \item Complex signal processing pipelines
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Debugging in GRC}
+\textbf{Debug Tools:}
+\begin{itemize}
+    \item \textbf{Print/Debug Block}: Console output
+    \item \textbf{Tag Debug}: Monitor stream tags
+    \item \textbf{Message Debug}: View message contents
+    \item \textbf{Number Sink}: Display numeric values
+    \item \textbf{Vector Sink}: Capture data for analysis
+\end{itemize}
+
+\textbf{Console Messages:}
+\begin{itemize}
+    \item Build errors (red)
+    \item Runtime warnings (yellow)
+    \item Debug output (white)
+    \item Performance metrics (green)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Performance Optimization}
+\textbf{Buffer Settings:}
+\begin{itemize}
+    \item \textbf{Output Buffer Size}: Increase for bursty data
+    \item \textbf{CPU Affinity}: Pin blocks to specific cores
+    \item \textbf{Max Output Items}: Control processing chunk size
+\end{itemize}
+
+\textbf{Best Practices:}
+\begin{itemize}
+    \item Use decimation early in the chain
+    \item Minimize type conversions
+    \item Avoid unnecessary GUI updates
+    \item Profile with Performance Monitor
+    \item Consider using compiled Python blocks
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Common GRC Patterns}
+\textbf{Signal Generation:}
+\begin{itemize}
+    \item Signal Source $\rightarrow$ Throttle $\rightarrow$ Sink
+\end{itemize}
+
+\textbf{File Processing:}
+\begin{itemize}
+    \item File Source $\rightarrow$ Processing $\rightarrow$ File Sink
+\end{itemize}
+
+\textbf{Real-time SDR:}
+\begin{itemize}
+    \item USRP/RTL-SDR Source $\rightarrow$ Processing $\rightarrow$ GUI
+\end{itemize}
+
+\textbf{Modulation:}
+\begin{itemize}
+    \item Source $\rightarrow$ Modulator $\rightarrow$ Channel $\rightarrow$ Demodulator
+\end{itemize}
+\end{frame}
+
+
+\section{Python Integration}
+
+\begin{frame}[plain]
+\vfill
+\centering
+\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+\usebeamerfont{title}\Large Python Integration\par
+\end{beamercolorbox}
+\vfill
+\begin{itemize}
+    \item GNU Radio Python API
+    \item Custom Python Blocks
+    \item Embedding in Applications
+    \item Advanced Python Techniques
+\end{itemize}
+\vfill
+\end{frame}
+
+\begin{frame}{GRC to Python}
+\begin{itemize}
+    \item GRC generates Python code automatically
+    \item File: top\_block.py
+    \item Fully functional application
+    \item Can be modified and extended
+    \item Class inherits from gr.top\_block
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Custom Python Blocks}
+\begin{itemize}
+    \item sync\_block: 1:1 input/output ratio
+    \item decimator: N:1 ratio (downsampling)
+    \item interpolator: 1:N ratio (upsampling)
+    \item general\_block: Variable ratios
+    \item basic\_block: base class, used for multi-rate and ...
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Sync Block Example}
+\textbf{1:1 Input/Output Ratio - Signal Processing}
+\tiny
+\begin{verbatim}
+import numpy as np
+from gnuradio import gr
+
+class amplitude_scale(gr.sync_block):
+    def __init__(self, scale=2.0, offset=0.0):
+        gr.sync_block.__init__(self, name="Amplitude Scale",
+            in_sig=[np.complex64], out_sig=[np.complex64])
+        self.scale, self.offset = scale, offset
+    
+    def work(self, input_items, output_items):
+        output_items[0][:] = input_items[0] * self.scale + self.offset
+        return len(output_items[0])
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Decimator Block Example}
+\textbf{N:1 Downsampling - Averaging}
+\tiny
+\begin{verbatim}
+from gnuradio import gr
+import numpy as np
+
+class averaging_decimator(gr.decim_block):
+    def __init__(self, decimation=4):
+        gr.decim_block.__init__(self, name="Averaging Decimator",
+            in_sig=[np.float32], out_sig=[np.float32], decim=decimation)
+        self.decimation = decimation
+    
+    def work(self, input_items, output_items):
+        in0, out = input_items[0], output_items[0]
+        for i in range(len(out)):
+            out[i] = np.mean(in0[i*self.decimation:(i+1)*self.decimation])
+        return len(out)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Interpolator Block Example}
+\textbf{1:N Upsampling - Zero Padding}
+\tiny
+\begin{verbatim}
+from gnuradio import gr
+
+class zero_pad_interpolator(gr.interp_block):
+    def __init__(self, interpolation=4):
+        gr.interp_block.__init__(self, name="Zero Pad Interpolator",
+            in_sig=[np.complex64], out_sig=[np.complex64], interp=interpolation)
+        self.interp = interpolation
+    
+    def work(self, input_items, output_items):
+        out = output_items[0]
+        out[::self.interp] = input_items[0]
+        out.flat[1::self.interp] = 0
+        return len(out)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{General Block Example (1/2)}
+\textbf{Variable Rate - Packet Detector Setup}
+\tiny
+\begin{verbatim}
+from gnuradio import gr
+import numpy as np
+
+class packet_detector(gr.basic_block):
+    def __init__(self, threshold=0.5):
+        gr.basic_block.__init__(self, name="Packet Detector",
+            in_sig=[np.float32], out_sig=[np.float32])
+        self.threshold = threshold
+    
+    def forecast(self, noutput_items, ninput_items_required):
+        ninput_items_required[0] = noutput_items
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{General Block Example (2/2)}
+\textbf{Variable Rate - Work Function}
+\tiny
+\begin{verbatim}
+    def general_work(self, input_items, output_items):
+        in0, out = input_items[0], output_items[0]
+        consumed = produced = 0
+        
+        for i, sample in enumerate(in0):
+            if abs(sample) > self.threshold:
+                out[produced] = sample
+                produced += 1
+            consumed = i + 1
+            if produced >= len(out): 
+                break
+                
+        self.consume(0, consumed)
+        return produced
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Message Passing Block}
+\textbf{Asynchronous Message Processing}
+\tiny
+\begin{verbatim}
+import pmt, numpy as np
+from gnuradio import gr
+
+class message_statistics(gr.basic_block):
+    def __init__(self):
+        gr.basic_block.__init__(self, name="Message Statistics",
+            in_sig=None, out_sig=None)
+        self.message_port_register_in(pmt.intern("data_in"))
+        self.message_port_register_out(pmt.intern("stats_out"))
+        self.set_msg_handler(pmt.intern("data_in"), self.handle_message)
+    
+    def handle_message(self, msg):
+        data = pmt.to_python(msg)
+        stats = {'mean': float(np.mean(data)), 'std': float(np.std(data)),
+                 'max': float(np.max(data)), 'min': float(np.min(data))}
+        self.message_port_pub(pmt.intern("stats_out"), pmt.to_pmt(stats))
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Tagged Stream Block Example (1/2)}
+\textbf{Packet Encoder with Stream Tags}
+\tiny
+\begin{verbatim}
+from gnuradio import gr
+import numpy as np
+import pmt
+
+class packet_encoder(gr.tagged_stream_block):
+    def __init__(self, packet_len=100, preamble=[1,-1,1,-1]):
+        gr.tagged_stream_block.__init__(self,
+            name="Packet Encoder",
+            in_sig=[np.float32],
+            out_sig=[np.complex64],
+            length_tag_name="packet_len")
+        self.packet_len = packet_len
+        self.preamble = np.array(preamble, dtype=np.complex64)
+        self.set_tag_propagation_policy(gr.TPP_DONT)
+        
+    def work(self, input_items, output_items):
+        in0 = input_items[0]
+        out = output_items[0]
+        
+        # Get packet length from tag
+        tags = self.get_tags_in_window(0, 0, len(in0))
+        packet_len = len(in0)  # Default to input length
+        
+        for tag in tags:
+            if pmt.equal(tag.key, pmt.intern("packet_len")):
+                packet_len = pmt.to_long(tag.value)
+                break
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Tagged Stream Block Example (2/2)}
+\textbf{Packet Encoder - Processing and Tagging}
+\tiny
+\begin{verbatim}
+        # Add preamble
+        preamble_len = len(self.preamble)
+        out[:preamble_len] = self.preamble
+        
+        # Encode data (simple BPSK for example)
+        data_len = min(packet_len, len(in0))
+        encoded = np.array([1+0j if x > 0 else -1+0j for x in in0[:data_len]])
+        out[preamble_len:preamble_len+data_len] = encoded
+        
+        # Add tags for packet boundaries
+        self.add_item_tag(0,  # output port
+            self.nitems_written(0),  # absolute offset
+            pmt.intern("packet_start"),  # tag key
+            pmt.from_long(preamble_len + data_len),  # tag value
+            pmt.intern(self.name()))  # source
+            
+        # Add tag for modulation type
+        self.add_item_tag(0,
+            self.nitems_written(0) + preamble_len,
+            pmt.intern("modulation"),
+            pmt.intern("BPSK"),
+            pmt.intern(self.name()))
+        
+        return preamble_len + data_len
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Reading Stream Tags - Simple Example}
+\textbf{Reading Tag Values and Updating State}
+\tiny
+\begin{verbatim}
+from gnuradio import gr
+import numpy as np, pmt
+
+class simple_tag_reader(gr.sync_block):
+    def __init__(self):
+        gr.sync_block.__init__(self, name="Simple Tag Reader",
+            in_sig=[np.complex64], out_sig=[np.complex64])
+        self.gain = 1.0
+        self.frequency = 0.0
+        
+    def work(self, input_items, output_items):
+        in0 = input_items[0]
+        out = output_items[0]
+        
+        # Get all tags in this work call's window
+        tags = self.get_tags_in_window(0, 0, len(in0))
+        
+        # Process each tag and update member variables
+        for tag in tags:
+            key = pmt.to_python(tag.key)
+            value = pmt.to_python(tag.value)
+            
+            if key == "gain":
+                self.gain = value
+            elif key == "freq":
+                self.frequency = value
+        
+        # Copy input to output (pass-through)
+        out[:] = in0
+        return len(out)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Hierarchical Block Example (1/2)}
+\textbf{Composite Block - FM Demodulator Setup}
+\tiny
+\begin{verbatim}
+from gnuradio import gr, blocks, analog, filter
+
+class fm_demod_cf(gr.hier_block2):
+    def __init__(self, audio_rate=48000, quad_rate=480000):
+        gr.hier_block2.__init__(self, "FM Demodulator",
+            gr.io_signature(1, 1, gr.sizeof_gr_complex),
+            gr.io_signature(1, 1, gr.sizeof_float))
+        
+        # Create internal blocks
+        self.quad_demod = analog.quadrature_demod_cf(quad_rate/(2*3.14159*75e3))
+        audio_decim = int(quad_rate / audio_rate)
+        audio_taps = filter.firdes.low_pass(1.0, quad_rate, 15e3, 1e3)
+        self.audio_filter = filter.fir_filter_fff(audio_decim, audio_taps)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Hierarchical Block Example (2/2)}
+\textbf{Composite Block - Connections}
+\tiny
+\begin{verbatim}
+        # Connect internal blocks to form the processing chain
+        self.connect(self, self.quad_demod)
+        self.connect(self.quad_demod, self.audio_filter) 
+        self.connect(self.audio_filter, self)
+        
+# Usage example:
+if __name__ == '__main__':
+    tb = gr.top_block()
+    src = analog.sig_source_c(480000, analog.GR_COS_WAVE, 1000, 1, 0)
+    demod = fm_demod_cf()
+    sink = audio.sink(48000, '')
+    tb.connect(src, demod, sink)
+    tb.run()
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Tagged Stream Example}
+\textbf{Stream Tagging for Burst Processing}
+\tiny
+\begin{verbatim}
+import pmt, numpy as np
+from gnuradio import gr
+
+class burst_tagger(gr.sync_block):
+    def __init__(self, burst_len=100):
+        gr.sync_block.__init__(self, "Burst Tagger",
+            in_sig=[np.complex64], out_sig=[np.complex64])
+        self.burst_len, self.sample_count = burst_len, 0
+    
+    def work(self, input_items, output_items):
+        output_items[0][:] = input_items[0]  # Pass through data
+        
+        for i in range(len(output_items[0])):
+            if self.sample_count % self.burst_len == 0:
+                tag = gr.tag_t()
+                tag.offset = self.nitems_written(0) + i
+                tag.key = pmt.string_to_symbol("burst_start")
+                tag.value = pmt.from_long(self.sample_count // self.burst_len)
+                self.add_item_tag(0, tag)
+            self.sample_count += 1
+        return len(output_items[0])
+\end{verbatim}
+\end{frame}
+
+\section{Signal Processing}
+
+\begin{frame}[plain]
+\vfill
+\centering
+\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+\usebeamerfont{title}\Large Signal Processing\par
+\end{beamercolorbox}
+\vfill
+\begin{itemize}
+    \item Digital Filters
+    \item Modulation Techniques
+    \item Spectral Analysis
+    \item Synchronization
+\end{itemize}
+\vfill
+\end{frame}
+
+\begin{frame}{Digital Filters}
+\begin{itemize}
+    \item Low Pass Filter (LPF)
+    \item High Pass Filter (HPF)
+    \item Band Pass Filter (BPF)
+    \item FIR and IIR implementations
+    \item Key parameters: Cutoff frequency, Transition width
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Modulation Techniques Overview}
+\footnotesize
+\begin{columns}[T]
+\column{0.33\textwidth}
+\textbf{\color{blue}Analog Modulation}
+
+\textit{Amplitude (AM):}
+\begin{itemize}
+\small
+    \item DSB-FC (Full Carrier)
+    \item DSB-SC (Suppressed)
+    \item SSB (Single Sideband)
+    \item VSB (Vestigial)
+\end{itemize}
+
+\textit{Frequency (FM):}
+\begin{itemize}
+\small
+    \item NBFM (Narrowband)
+    \item WBFM (Wideband)
+    \item PM (Phase Mod)
+\end{itemize}
+
+\textit{Applications:}
+\begin{itemize}
+\small
+    \item AM/FM Radio
+    \item TV Broadcasting
+    \item Amateur Radio
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{\color{blue}Digital Modulation}
+
+\textit{Amplitude Shift:}
+\begin{itemize}
+\small
+    \item OOK (On-Off Keying)
+    \item ASK (Amplitude Shift)
+    \item PAM (Pulse Amplitude)
+\end{itemize}
+
+\textit{Frequency/Phase:}
+\begin{itemize}
+\small
+    \item FSK (2-FSK, 4-FSK)
+    \item MSK (Minimum Shift)
+    \item GMSK (Gaussian MSK)
+    \item BPSK/QPSK/8PSK
+    \item DPSK (Differential)
+\end{itemize}
+
+\textit{Quadrature:}
+\begin{itemize}
+\small
+    \item QAM (16, 64, 256)
+    \item OFDM (Orthogonal)
+    \item APSK (Amplitude-Phase)
+\end{itemize}
+
+\column{0.33\textwidth}
+\textbf{\color{blue}GNU Radio Blocks}
+
+\textit{Modulators:}
+\begin{itemize}
+\small
+    \item AM/FM/NBFM Mod
+    \item PSK Mod/Demod
+    \item QAM Mod/Demod
+    \item GFSK Mod/Demod
+    \item OFDM Tx/Rx
+\end{itemize}
+
+\textit{Supporting Blocks:}
+\begin{itemize}
+\small
+    \item Constellation Object
+    \item Symbol Sync
+    \item Costas Loop
+    \item Symbol Sync
+    \item AGC
+    \item FLL Band-Edge
+\end{itemize}
+
+\textit{Constellation Tools:}
+\begin{itemize}
+\small
+    \item Constellation Sink
+    \item Constellation Decoder
+    \item Constellation Rect
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Implementing Modulation in GNU Radio}
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{AM Transmitter Example:}
+\begin{itemize}
+    \item Signal Source $\rightarrow$ 
+    \item Add Const (DC offset) $\rightarrow$
+    \item Multiply (with carrier) $\rightarrow$
+    \item Audio/File Sink
+\end{itemize}
+
+\textbf{FM Transmitter Example:}
+\begin{itemize}
+    \item Audio Source $\rightarrow$
+    \item FM Modulator $\rightarrow$
+    \item Rational Resampler $\rightarrow$
+    \item Low Pass Filter $\rightarrow$
+    \item USRP/File Sink
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Digital PSK Example:}
+\begin{itemize}
+    \item Random Source $\rightarrow$
+    \item Constellation Modulator $\rightarrow$
+    \item Root Raised Cosine Filter $\rightarrow$
+    \item Resample to ADC rate $\rightarrow$
+    \item Transmit 
+\end{itemize}
+
+\textbf{Common Issues:}
+\begin{itemize}
+    \item Frequency offset
+    \item Timing synchronization
+    \item Phase ambiguity
+    \item ISI (Inter-Symbol Interference)
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{PSK - Phase Shift Keying}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{What is PSK?}
+\begin{itemize}
+    \item Digital data encoded in signal phase
+    \item Constant amplitude (power efficient)
+    \item Common in satellite and wireless
+\end{itemize}
+
+
+\vspace{0.3cm}
+\textbf{Common Types:}
+\begin{itemize}
+    \item BPSK: 2 phases, 1 bit/symbol
+    \item QPSK: 4 phases, 2 bits/symbol
+    \item 8-PSK: 8 phases, 3 bits/symbol
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Reference:}\\
+\tiny\url{https://wiki.gnuradio.org/index.php?title=Guided_Tutorial_PSK_Demodulation}
+\normalsize
+
+\column{0.5\textwidth}
+\textbf{GNU Radio Blocks:}
+\begin{itemize}
+    \item PSK Mod/Demod
+    \item Constellation Object
+    \item Costas Loop (carrier sync)
+    \item Symbol Sync
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Key Parameters:}
+\begin{itemize}
+    \item Samples per symbol: 2-8
+    \item Excess bandwidth: 0.35
+    \item Gray coding for BER
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{QAM - Quadrature Amplitude Modulation}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{What is QAM?}
+\begin{itemize}
+    \item Combines amplitude and phase
+    \item Higher data rates than PSK
+    \item Used in WiFi, LTE, cable modems
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Common Types:}
+\begin{itemize}
+    \item 16-QAM: 4 bits/symbol
+    \item 64-QAM: 6 bits/symbol
+    \item 256-QAM: 8 bits/symbol
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{GNU Radio Blocks:}
+\begin{itemize}
+    \item QAM Mod/Demod
+    \item Constellation Object
+    \item Adaptive Equalizer
+    \item AGC
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Trade-offs:}
+\begin{itemize}
+    \item High data rate vs SNR requirement
+    \item More complex than PSK
+    \item Sensitive to amplifier linearity
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{FSK - Frequency Shift Keying}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{What is FSK?}
+\begin{itemize}
+    \item Digital data encoded in frequency
+    \item Constant amplitude signal
+    \item Simple and robust
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Common Types:}
+\begin{itemize}
+    \item Binary FSK (2 frequencies)
+    \item GFSK (Gaussian - Bluetooth)
+    \item GMSK (GSM cellular)
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{GNU Radio Blocks:}
+\begin{itemize}
+    \item GFSK Mod/Demod
+    \item Frequency Mod/Demod
+    \item Quadrature Demod
+    \item Clock Recovery MM
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Key Parameters:}
+\begin{itemize}
+    \item Modulation index: 0.5-5
+    \item Deviation: 2.4-75 kHz
+    \item BT product: 0.3-0.5
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\section{Hardware Integration}
+
+\begin{frame}[plain]
+\vfill
+\centering
+\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+\usebeamerfont{title}\Large Hardware Integration\par
+\end{beamercolorbox}
+\vfill
+\begin{itemize}
+    \item Supported SDR Hardware
+    \item Configuration and Setup
+    \item Performance Considerations
+\end{itemize}
+\vfill
+\end{frame}
+
+\begin{frame}{Network Interfaces}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{TCP/UDP}
+\begin{itemize}
+    \item Stream IQ over network
+    \item Remote SDR operation
+    \item Simple but higher latency
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{ZeroMQ}
+\begin{itemize}
+    \item High-performance messaging
+    \item Multiple patterns
+    \item Better for real-time
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\section{Out-of-Tree Modules}
+
+\begin{frame}[plain]
+\vfill
+\centering
+\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+\usebeamerfont{title}\Large Out-of-Tree Modules\par
+\end{beamercolorbox}
+\vfill
+\begin{itemize}
+    \item Creating Custom Modules
+    \item Module Structure
+    \item Distribution and Sharing
+\end{itemize}
+\vfill
+\end{frame}
+
+\begin{frame}{Creating OOT Modules}
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{What are OOT Modules?}
+\begin{itemize}
+\small
+    \item Custom GNU Radio components
+    \item Developed independently from core
+    \item Packaged for easy distribution
+    \item Can include:
+    \begin{itemize}
+    \footnotesize
+        \item Processing blocks
+        \item Hierarchical blocks
+        \item Python/C++ code
+        \item GRC block definitions
+    \end{itemize}
+\end{itemize}
+
+\textbf{Why Create OOT Modules?}
+\begin{itemize}
+\small
+    \item Share custom functionality
+    \item Maintain proprietary code
+    \item Organize project-specific blocks
+    \item Contribute to community
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{gr\_modtool Workflow}
+\begin{enumerate}
+\small
+    \item \texttt{gr\_modtool newmod mymodule}
+    \item \texttt{cd gr-mymodule}
+    \item \texttt{gr\_modtool add myblock}
+    \item Edit block code (Python/C++)
+    \item \texttt{gr\_modtool bind myblock}
+    \item \texttt{mkdir build \&\& cd build}
+    \item \texttt{cmake .. \&\& make}
+    \item \texttt{sudo make install}
+\end{enumerate}
+
+\textbf{Popular OOT Modules}
+\begin{itemize}
+\small
+    \item \textbf{gr-ieee802-11}: WiFi implementation
+    \item \textbf{gr-lora}: LoRa transceiver
+    \item \textbf{gr-satellites}: Satellite decoders
+    \item \textbf{gr-fosphor}: GPU spectrum display
+    \item \textbf{gr-osmosdr}: Hardware abstraction
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{OOT Module Structure}
+\footnotesize
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{Directory Layout:}
+\begin{verbatim}
+gr-mymodule/
+|-- CMakeLists.txt
+|-- python/
+|   |-- __init__.py
+|   |-- myblock.py
+|   `-- qa_myblock.py
+|-- lib/
+|   |-- myblock_impl.cc
+|   `-- myblock_impl.h
+|-- include/mymodule/
+|   `-- myblock.h
+|-- grc/
+|   `-- mymodule_myblock.block.yml
+|-- examples/
+|   `-- example_flowgraph.grc
+`-- docs/
+\end{verbatim}
+
+\column{0.5\textwidth}
+\textbf{Key Components:}
+\begin{itemize}
+    \item \textbf{CMakeLists.txt}: Build configuration
+    \item \textbf{python/}: Python implementations
+    \item \textbf{lib/}: C++ implementations
+    \item \textbf{include/}: Public headers
+    \item \textbf{grc/}: GRC block definitions (YAML)
+    \item \textbf{examples/}: Demo flowgraphs
+\end{itemize}
+
+\end{columns}
+\end{frame}
+
+\section{Conclusion}
+
+\begin{frame}[plain]
+\vfill
+\centering
+\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+\usebeamerfont{title}\Large Conclusion\par
+\end{beamercolorbox}
+\vfill
+\begin{itemize}
+    \item Key Takeaways
+    \item Next Steps
+    \item Resources
+\end{itemize}
+\vfill
+\end{frame}
+
+\begin{frame}{Summary}
+\begin{itemize}
+    \item Learned SDR fundamentals
+    \item Built flowgraphs in GRC
+    \item Created Python applications
+    \item Explored hardware options
+    \item Ready for advanced topics!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Resources}
+\begin{itemize}
+    \item GNU Radio Documentation: www.gnuradio.org/doc/doxygen/
+    \item Tutorials: wiki.gnuradio.org/index.php?title=Tutorials
+    \item Community: chat.gnuradio.org
+    \item Workshop materials: github.com/thewyliestcoyote/grcon25-workshop
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Questions?}
+\centering
+\Large Thank you for attending!\\[1em]
+\Large Welcome to GRCon25\\[1em]
+\normalsize
+Contact: thewyliestcoyote@gmail.com \\
+Matrix Chat: thewyliestcoyote
+\end{frame}
+
+\end{document}

@@ -1,0 +1,89 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{verbatim}
+\usepackage{listings}
+
+% TikZ libraries
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% Code listing settings
+\lstset{
+    basicstyle=\tiny\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny,
+    numbersep=5pt,
+    breaklines=true,
+    frame=single,
+    frameround=tttt,
+    tabsize=2
+}
+
+% Title Information
+\title{Introduction to GNU Radio}
+\subtitle{Using GRC and Python for Software Defined Radio}
+\author{Workshop Instructor}
+\institute{GRCon 2025}
+\date{\today}
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Agenda}
+\tableofcontents
+\end{frame}
+
+% Include all sections with their detailed content
+\input{sections/01_intro_sdr}
+\input{sections/02_grc_basics}
+\input{sections/03_python_integration}
+\input{sections/04_signal_processing}
+\input{sections/05_hardware}
+\input{sections/06_oot_modules}
+
+% Conclusion section
+\section{Conclusion}
+\begin{frame}{Summary}
+\begin{itemize}
+    \item Learned SDR fundamentals
+    \item Built flowgraphs in GRC
+    \item Created Python applications
+    \item Explored hardware options
+    \item Ready for advanced topics!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Resources}
+\begin{itemize}
+    \item GNU Radio Documentation: gnuradio.org/doc
+    \item Tutorials: wiki.gnuradio.org/index.php/Tutorials
+    \item Community: chat.gnuradio.org
+    \item Workshop materials: github.com/workshop-repo
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Questions?}
+\centering
+\Large Thank you for attending!\\[1em]
+\normalsize
+Contact: instructor@example.com
+\end{frame}
+
+\end{document}
